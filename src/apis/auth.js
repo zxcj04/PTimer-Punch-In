@@ -7,6 +7,7 @@ export default {
     return axios.post(PREFIX + '/login', payload);
   },
   userLogout(payload) {
-    return axios.post(PREFIX + '/logout', payload);
+    const session_id = payload.session_id;
+    return axios.post(PREFIX + '/logout', {}, {headers: {'SESSION-ID': session_id}});
   },
 }
