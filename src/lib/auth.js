@@ -22,15 +22,31 @@ const userLogin = async (mail, password) => {
 
 const userLogout = async () => {
   const { cookies } = useCookies();
-  const response = await apis.userLogout({ session_id: cookies.get("session_id") });
-
-  cookies.remove("session_id");
-
-  return response.data.valid;
+  try {
+    const response = await apis.userLogout({ session_id: cookies.get("session_id") });
+    cookies.remove("session_id");
+    return true;
+  } catch (error) {
+    console.log(error);
+    cookies.remove("session_id");
+    return false;
+  }
 }
 
+const checkLogin = async () => {
+  const { cookies } = useCookies();
+  try {
+    const response = await apis.checkSession({ session_id: cookies.get("session_id") });
+    return true;
+  } catch (error) {
+    console.log(error);
+    cookies.remove("session_id");
+    return false;
+  }
+}
 
 export {
   userLogin,
   userLogout,
+  checkLogin,
 };

@@ -14,6 +14,7 @@
                 placeholder="abc@gmail.com"
               />
               <v-text-field
+                type="password"
                 label="密碼"
                 :rules="[v => !!v || '請填入您的密碼']"
                 v-model="password"

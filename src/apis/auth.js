@@ -10,4 +10,8 @@ export default {
     const session_id = payload.session_id;
     return axios.post(PREFIX + '/logout', {}, {headers: {'SESSION-ID': session_id}});
   },
+  checkSession(payload) {
+    const session_id = payload.session_id;
+    return axios.post(PREFIX + '/check_session', {}, {headers: {'SESSION-ID': session_id}});
+  },
 }
