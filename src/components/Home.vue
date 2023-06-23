@@ -12,8 +12,14 @@
         ></v-list-item>
       </v-list>
       <v-divider />
-      <v-list v-model:selected="selectedComponent" nav @click:select="onClickNav">
-        <v-list-item prepend-icon="mdi-clock-in" title="打卡" value="punch"></v-list-item>
+      <v-list
+        v-model:selected="selectedComponent"
+        nav
+        @click:select="onClickNav"
+        color="primary"
+        mandatory
+      >
+        <v-list-item prepend-icon="mdi-timeline-check" title="打卡" value="punch"></v-list-item>
         <v-list-item prepend-icon="mdi-list-box-outline" title="統計" value="summary"></v-list-item>
         <v-list-item prepend-icon="mdi-account" title="個人資料" value="profile"></v-list-item>
         <v-list-item prepend-icon="mdi-shield-crown-outline" title="管理員" value="admin"></v-list-item>

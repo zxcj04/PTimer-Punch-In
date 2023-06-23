@@ -3,41 +3,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, defineExpose } from 'vue';
 
 const nowTime = ref(new Date());
 const displayTime = ref('');
 
-const updateTask = ref(null);
+const updateTime = () => {
+  nowTime.value = new Date();
+  let hr = nowTime.value.getHours();
+  let min = nowTime.value.getMinutes();
+  let sec = nowTime.value.getSeconds();
 
-onMounted(() => {
-  updateTask.value = setInterval(() => {
-    nowTime.value = new Date();
-    let hr = nowTime.value.getHours();
-    let min = nowTime.value.getMinutes();
-    let sec = nowTime.value.getSeconds();
+  let session = "AM";
 
-    let session = "AM";
+  if(hr == 0){
+    hr = 12;
+  }
 
-    if(hr == 0){
-      hr = 12;
-    }
+  if(hr > 12){
+    hr = hr - 12;
+    session = "PM";
+  }
 
-    if(hr > 12){
-      hr = hr - 12;
-      session = "PM";
-    }
+  hr = (hr < 10) ? "0" + hr : hr;
+  min = (min < 10) ? "0" + min : min;
+  sec = (sec < 10) ? "0" + sec : sec;
 
-    hr = (hr < 10) ? "0" + hr : hr;
-    min = (min < 10) ? "0" + min : min;
-    sec = (sec < 10) ? "0" + sec : sec;
+  displayTime.value = hr + ":" + min + ":" + sec + " " + session;
+}
 
-    displayTime.value = hr + ":" + min + ":" + sec + " " + session;
-  }, 200);
-});
-
-onBeforeUnmount(() => {
-  clearInterval(updateTask.value);
+defineExpose({
+  updateTime,
 });
 </script>
 

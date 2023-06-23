@@ -16,31 +16,60 @@
             </v-toolbar-title>
           </v-toolbar>
 
-          <v-card-text v-if="isPageLoading" class="text-center">
-            <v-progress-circular
-              indeterminate
-              color="primary"
-            ></v-progress-circular>
-          </v-card-text>
-
-          <v-card-text v-if="!isPageLoading">
+          <v-card-text>
             <v-card :color="isActive? '#015e69': '#363636'" class="py-5">
               <v-card-text>
                 <v-row>
                   <v-col cols="12">
-                    <Clock></Clock>
+                    <Clock ref="clock" />
+                    <v-expand-transition>
+                      <Timer ref="timer" class="mt-4" v-if="isActive" :name="activePunch.project_name" :startTime="activePunch.punch_in_time" />
+                    </v-expand-transition>
                   </v-col>
-
+                  <v-col cols="12" v-if="isPageLoading" class="text-center">
+                    <v-progress-circular
+                      indeterminate
+                      color="primary"
+                    ></v-progress-circular>
+                  </v-col>
+                </v-row>
+                <v-row v-if="!isPageLoading">
                   <v-col cols="12" v-if="!isActive">
+                    <v-expand-transition>
+                      <v-item-group
+                        selected-class="bg-primary"
+                        v-if="isSelectingProject"
+                        v-model="selectedProject"
+                        mandatory
+                      >
+                        <v-row dense>
+                          <v-col cols="12" v-for="p in projects" :key="p.project_id">
+                            <v-item v-slot="{ isSelected, selectedClass, toggle }" :value="p.project_id">
+                              <v-card
+                                :class="['d-flex align-center', selectedClass]"
+                                dark
+                                height="50"
+                                @click="toggle"
+                              >
+                                <v-card-text>
+                                  {{ p.project_name }}
+                                  <v-icon v-if="isSelected">mdi-check</v-icon>
+                                </v-card-text>
+                              </v-card>
+                            </v-item>
+                          </v-col>
+                        </v-row>
+                      </v-item-group>
+                    </v-expand-transition>
                     <v-btn
-                      v-on:click="punchIn"
-                      color="success"
-                      class="mx-auto"
+                      v-on:click="punchInProcess"
+                      :color="isSelectingProject? 'green': 'primary'"
+                      class="mx-auto mt-3"
                       width="100%"
-                      :disabled="isLoading"
+                      :disabled="isLoading || (isSelectingProject && !selectedProject)"
                     >
                       <v-icon>mdi-clock-in</v-icon>
-                      我要打卡
+                      {{ isSelectingProject? '確認打卡': '我要打卡'}}
                     </v-btn>
                   </v-col>
 
@@ -73,26 +102,29 @@
             </v-card>
 
             <div class="font-weight-bold ms-1 mb-2 mt-5">
-              打卡記錄
+              近期打卡記錄
             </div>
 
-            <v-timeline density="compact" align="start">
+            <v-timeline density="compact">
               <v-timeline-item
                 v-for="punch in punchs"
                 :key="punch.time"
                 :dot-color="punch.color"
                 size="x-small"
+                width="100%"
               >
-                <div class="mb-4">
-                  <div class="font-weight-normal">
-                    <strong>{{ punch.text }}</strong>
-                  </div>
-                </div>
-                <div class="mb-4">
-                  <div class="font-weight-normal">
-                    {{ punch.time }}
-                  </div>
-                </div>
+                <v-alert color="#3b3b3b">
+                  <v-chip
+                    class="mr-5 mb-1"
+                    :color="punch.color"
+                    label
+                    small
+                  >
+                    {{ punch.text }}
+                  </v-chip>
+                  <strong>{{ punch.project_name }}</strong>
+                  <div>{{ punch.time }}</div>
+                </v-alert>
               </v-timeline-item>
             </v-timeline>
           </v-card-text>
@@ -103,12 +135,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { checkLogin } from '@/lib/auth';
 import { userPunchIn, userPunchOut, getPunchs, getActivePunch } from '@/lib/punch';
+import { getProjectList } from '@/lib/project';
 
 import Clock from '@/components/Home/Clock.vue';
+import Timer from '@/components/Home/Timer.vue';
 
 const isPageLoading = ref(true);
 
@@ -120,28 +154,46 @@ const isActive = computed(() => {
   return activePunch.value !== null;
 });
 
+const projects = ref([]);
+const isSelectingProject = ref(false);
+const selectedProject = ref('');
+
 const isLoading = ref(false);
+
+const autoUpdatePunchTask = ref(null);
+
+const clock = ref(null);
+const timer = ref(null);
+const updateClockTask = ref(null);
 
 const punchIn = async () => {
   isLoading.value = true;
-  const [result, t] = await userPunchIn();
+  const [result, t] = await userPunchIn(selectedProject.value);
   console.log(result, t);
-  await updateActivePunch();
-  await updatePunchs();
+  await updateAllPunchs();
   isLoading.value = false;
+  isSelectingProject.value = false;
+};
+
+const punchInProcess = async () => {
+  if (isSelectingProject.value) {
+    punchIn();
+    return;
+  }
+
+  isSelectingProject.value = true;
 };
 
 const punchOut = async () => {
   isLoading.value = true;
   const [result, t] = await userPunchOut();
   console.log(result, t);
-  await updateActivePunch();
-  await updatePunchs();
+  await updateAllPunchs();
   isLoading.value = false;
 };
 
 const updatePunchs = async () => {
-  const [result, p] = await getPunchs();
+  const [, p] = await getPunchs();
   punchs.value = p;
 };
 
@@ -154,6 +206,28 @@ const updateActivePunch = async () => {
   }
 };
 
+const updateAllPunchs = () => {
+  return Promise.all([updateActivePunch(), updatePunchs()]);
+};
+
+const updateProjects = async () => {
+  const [result, p] = await getProjectList();
+  if (result) {
+    projects.value = p;
+  } else {
+    projects.value = [];
+  }
+};
+
+const updateClockTime = () => {
+  if (clock.value) {
+    clock.value.updateTime();
+  }
+  if (timer.value) {
+    timer.value.updateTime();
+  }
+};
+
 onMounted(async () => {
   const isLogin = await checkLogin();
   if (!isLogin) {
@@ -161,9 +235,24 @@ onMounted(async () => {
     return;
   }
 
-  await updateActivePunch();
-  await updatePunchs();
+  updateClockTask.value = setInterval(updateClockTime, 200);
+
+  await updateAllPunchs();
+  await updateProjects();
 
   isPageLoading.value = false;
+
+  autoUpdatePunchTask.value = setInterval(async () => {
+    await updateAllPunchs();
+  }, 2500);
+});
+
+onBeforeUnmount(() => {
+  if (autoUpdatePunchTask.value !== null) {
+    clearInterval(autoUpdatePunchTask.value);
+  }
+  if (updateClockTask.value !== null) {
+    clearInterval(updateClockTask.value);
+  }
 });
 </script>

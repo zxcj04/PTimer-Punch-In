@@ -1,10 +1,14 @@
 import apis from "@/apis/punch";
 import { useCookies } from "vue3-cookies";
 
-const userPunchIn = async (payload) => {
+const userPunchIn = async (project_id) => {
   const { cookies } = useCookies();
+  const payload = {
+    session_id: cookies.get("session_id"),
+    project_id,
+  };
   try {
-    const response = await apis.userPunchIn({ session_id: cookies.get("session_id") });
+    const response = await apis.userPunchIn(payload);
     return [true, response.data.msg];
   } catch (error) {
     console.log(error);
@@ -12,7 +16,7 @@ const userPunchIn = async (payload) => {
   }
 }
 
-const userPunchOut = async (payload) => {
+const userPunchOut = async () => {
   const { cookies } = useCookies();
   try {
     const response = await apis.userPunchOut({ session_id: cookies.get("session_id") });
@@ -23,7 +27,7 @@ const userPunchOut = async (payload) => {
   }
 }
 
-const getPunchs = async (payload) => {
+const getPunchs = async () => {
   const { cookies } = useCookies();
   try {
     const response = await apis.getPunchs({ session_id: cookies.get("session_id") });
@@ -31,12 +35,15 @@ const getPunchs = async (payload) => {
     const ret = p.reduce((acc, cur) => {
       const isDone = !!cur.punch_out_time;
       const startDate = new Date(cur.punch_in_time);
+      const formattedStartDate = startDate.toLocaleString();
 
       if (isDone) {
         const endDate = new Date(cur.punch_out_time);
+        const formattedEndDate = endDate.toLocaleString();
         acc.push({
           id: cur.punch_id + "-end",
-          time: endDate,
+          project_name: cur.project_name,
+          time: formattedEndDate,
           color: "green",
           text: "下班",
         })
@@ -44,7 +51,8 @@ const getPunchs = async (payload) => {
 
       acc.push({
         id: cur.punch_id + "-start",
-        time: startDate,
+        project_name: cur.project_name,
+        time: formattedStartDate,
         color: isDone? "blue" : "yellow",
         text: "上班",
       })
@@ -58,7 +66,7 @@ const getPunchs = async (payload) => {
   }
 }
 
-const getActivePunch = async (payload) => {
+const getActivePunch = async () => {
   const { cookies } = useCookies();
   try {
     const response = await apis.getActivePunch({ session_id: cookies.get("session_id") });
