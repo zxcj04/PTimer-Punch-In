@@ -193,7 +193,7 @@ const punchOut = async () => {
 };
 
 const updatePunchs = async () => {
-  const [, p] = await getPunchs();
+  const [, p] = await getPunchs(true);
   punchs.value = p;
 };
 

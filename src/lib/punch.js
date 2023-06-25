@@ -27,10 +27,13 @@ const userPunchOut = async () => {
   }
 }
 
-const getPunchs = async () => {
+const getPunchs = async (split=false) => {
   const { cookies } = useCookies();
   try {
     const response = await apis.getPunchs({ session_id: cookies.get("session_id") });
+    if (!split) {
+      return [true, response.data.punches];
+    }
     const p = response.data.punches.slice(0, 5);
     const ret = p.reduce((acc, cur) => {
       const isDone = !!cur.punch_out_time;

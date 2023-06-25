@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { ref, defineExpose } from 'vue';
+import { ref } from 'vue';
 
 const nowTime = ref(new Date());
 const displayTime = ref('');
