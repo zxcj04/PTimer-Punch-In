@@ -14,11 +14,31 @@ export default {
   },
   getPunchs(payload) {
     const session_id = payload.session_id;
-    return axios.get(PREFIX + '/list', {headers: {'SESSION-ID': session_id}});
+    const start = payload.start || null;
+    const end = payload.end || null;
+    const params = {};
+    if (start) {
+      params.start = start;
+    }
+    if (end) {
+      params.end = end;
+    }
+    return axios.get(PREFIX + '/list', {headers: {'SESSION-ID': session_id}, params: params});
   },
   getActivePunch(payload) {
     const session_id = payload.session_id;
     return axios.get(PREFIX + '/active', {headers: {'SESSION-ID': session_id}});
+  },
+  updatePunch(payload) {
+    const session_id = payload.session_id;
+    const punch_id = payload.punch_id;
+    const punch = payload.punch;
+    return axios.post(PREFIX + '/update', {punch_id, punch}, {headers: {'SESSION-ID': session_id}});
+  },
+  deletePunch(payload) {
+    const session_id = payload.session_id;
+    const punch_id = payload.punch_id;
+    return axios.post(PREFIX + '/delete', {punch_id}, {headers: {'SESSION-ID': session_id}});
   },
   getAdminAllPunchs(payload) {
     const session_id = payload.session_id;

@@ -25,15 +25,20 @@ const updateTime = () => {
   nowTime.value = new Date();
   const startTime = new Date(props.startTime);
   const timer = new Date(nowTime.value - startTime);
-  let hr = timer.getHours();
-  let min = timer.getMinutes();
-  let sec = timer.getSeconds();
+  let days = timer.getUTCDate() - 1;
+  let hr = timer.getUTCHours();
+  let min = timer.getUTCMinutes();
+  let sec = timer.getUTCSeconds();
+
+  if (days <= 0) {
+    days = null;
+  }
 
   hr = (hr < 10) ? "0" + hr : hr;
   min = (min < 10) ? "0" + min : min;
   sec = (sec < 10) ? "0" + sec : sec;
 
-  displayTime.value = hr + ":" + min + ":" + sec;
+  displayTime.value = (days? days + "d ": "") + hr + ":" + min + ":" + sec;
 };
 
 defineExpose({

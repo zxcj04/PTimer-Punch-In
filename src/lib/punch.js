@@ -27,6 +27,22 @@ const userPunchOut = async () => {
   }
 }
 
+const getPunchsByDates = async ({start, end}) => {
+  const { cookies } = useCookies();
+  const payload = {
+    session_id: cookies.get("session_id"),
+    start,
+    end,
+  };
+  try {
+    const response = await apis.getPunchs(payload);
+    return [true, response.data.punches];
+  } catch (error) {
+    console.log(error);
+    return [false, []];
+  }
+}
+
 const getPunchs = async (split=false) => {
   const { cookies } = useCookies();
   try {
@@ -79,9 +95,32 @@ const getActivePunch = async () => {
   }
 }
 
+const updatePunch = async (punch_id, punch) => {
+  const { cookies } = useCookies();
+  try {
+    const response = await apis.updatePunch({ session_id: cookies.get("session_id"), punch_id, punch });
+    return [true, response.data.msg];
+  } catch (error) {
+    return [false, error.response.data.msg];
+  }
+}
+
+const deletePunch = async (punch_id) => {
+  const { cookies } = useCookies();
+  try {
+    const response = await apis.deletePunch({ session_id: cookies.get("session_id"), punch_id });
+    return [true, response.data.msg];
+  } catch (error) {
+    return [false, error.response.data.msg];
+  }
+}
+
 export {
   userPunchIn,
   userPunchOut,
   getPunchs,
+  getPunchsByDates,
   getActivePunch,
+  updatePunch,
+  deletePunch,
 }

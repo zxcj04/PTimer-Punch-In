@@ -8,7 +8,7 @@
             theme="dark"
           >
             <template v-slot:prepend>
-              <v-icon>mdi-timeline-check</v-icon>
+              <v-icon class="ml-2">mdi-timeline-check</v-icon>
             </template>
 
             <v-toolbar-title class="text-h6 font-weight-bold">

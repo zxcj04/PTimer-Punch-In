@@ -1,6 +1,6 @@
 <template>
   <v-container
-    class="mx-auto overflow-auto"
+    class="mx-auto overflow-auto fluid"
   >
     <v-navigation-drawer
       v-model="showNav"
