@@ -23,7 +23,7 @@ const userLogin = async (mail, password) => {
 const userLogout = async () => {
   const { cookies } = useCookies();
   try {
-    const response = await apis.userLogout({ session_id: cookies.get("session_id") });
+    await apis.userLogout({ session_id: cookies.get("session_id") });
     cookies.remove("session_id");
     return true;
   } catch (error) {
@@ -36,7 +36,7 @@ const userLogout = async () => {
 const checkLogin = async () => {
   const { cookies } = useCookies();
   try {
-    const response = await apis.checkSession({ session_id: cookies.get("session_id") });
+    await apis.checkSession({ session_id: cookies.get("session_id") });
     return true;
   } catch (error) {
     console.log(error);
@@ -45,8 +45,20 @@ const checkLogin = async () => {
   }
 }
 
+const checkAdmin = async () => {
+  const { cookies } = useCookies();
+  try {
+    await apis.checkAdmin({ session_id: cookies.get("session_id") });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
 export {
   userLogin,
   userLogout,
   checkLogin,
+  checkAdmin,
 };

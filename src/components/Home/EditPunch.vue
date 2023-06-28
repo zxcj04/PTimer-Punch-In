@@ -14,15 +14,17 @@
       <v-card-text>
         <v-row>
           <v-col cols="12" md="4" sm="12">
-            <v-select label="專案名稱" :items="testItems" />
+            <v-select label="專案名稱" v-model="editedItem.project_name" :items="project_names" />
           </v-col>
           <v-col cols="12" md="4" sm="6">
             <v-text-field label="上班打卡時間" v-model="_punch_in_time_value" readonly></v-text-field>
-            <VueDatePicker v-model="editedItem.punch_in_time" inline auto-apply hide-offset-dates :clearable="false" dark :max-date="editedItem.punch_out_time" />
+            <VueDatePicker v-model="editedItem.punch_in_time" enable-seconds inline auto-apply hide-offset-dates
+              :clearable="false" dark :max-date="editedItem.punch_out_time" />
           </v-col>
           <v-col cols="12" md="4" sm="6" v-if="editedItem.punch_out_time">
             <v-text-field label="下班打卡時間" v-model="_punch_out_time_value" readonly></v-text-field>
-            <VueDatePicker v-model="editedItem.punch_out_time" inline auto-apply hide-offset-dates :clearable="false" dark :min-date="editedItem.punch_in_time" />
+            <VueDatePicker v-model="editedItem.punch_out_time" enable-seconds inline auto-apply hide-offset-dates
+              :clearable="false" dark :min-date="editedItem.punch_in_time" />
           </v-col>
         </v-row>
       </v-card-text>
@@ -44,7 +46,7 @@
 import { ref, computed } from 'vue';
 import { formattedDate } from '@/lib/misc';
 
-const props = defineProps(['dialog', 'punch']);
+const props = defineProps(['dialog', 'punch', 'projects']);
 const emit = defineEmits(['update:dialog', 'update:punch', 'editItem']);
 
 const onOpen = () => {
@@ -54,13 +56,14 @@ const onOpen = () => {
   else
     editedItem.value.punch_out_time = undefined;
   editedItem.value.project_id = _punch.value.project_id;
+  editedItem.value.project_name = props.projects.find((project) => project.project_id === _punch.value.project_id).project_name;
 };
 const close = () => emit('update:dialog', false);
 const save = () => {
   const punch_id = _punch.value.punch_id;
   const punch_in_time = editedItem.value.punch_in_time;
   const punch_out_time = editedItem.value.punch_out_time;
-  const project_id = editedItem.value.project_id;
+  const project_id = to_project_id(editedItem.value.project_name);
   const punch = {
     punch_id,
     punch_in_time,
@@ -76,9 +79,17 @@ const editedItem = ref({
   punch_in_time: new Date(),
   punch_out_time: new Date(),
   project_id: "",
+  project_name: "",
 });
 
-const testItems = ref(["1", "2", "3"]);
+const project_names = computed(() => {
+  return props.projects.map((project) => project.project_name);
+});
+
+const to_project_id = (project_name) => {
+  const project = props.projects.find((project) => project.project_name === project_name);
+  return project.project_id;
+};
 
 const _punch_in_time_value = computed({
   get() {

@@ -18,11 +18,24 @@
         @click:select="onClickNav"
         color="primary"
         mandatory
+        :opened="openedPanel"
       >
         <v-list-item prepend-icon="mdi-timeline-check" title="打卡" value="punch"></v-list-item>
         <v-list-item prepend-icon="mdi-list-box-outline" title="統計" value="summary"></v-list-item>
         <v-list-item prepend-icon="mdi-account" title="個人資料" value="profile"></v-list-item>
-        <v-list-item prepend-icon="mdi-shield-crown-outline" title="管理員" value="admin"></v-list-item>
+        <v-list-group value="admin">
+          <template v-slot:activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              prepend-icon="mdi-shield-crown-outline"
+              title="管理員"
+            ></v-list-item>
+          </template>
+
+          <v-list-item prepend-icon="mdi-account" title="帳戶管理" value="admin-user"></v-list-item>
+          <v-list-item prepend-icon="mdi-timeline-check" title="打卡管理" value="admin-punch"></v-list-item>
+          <v-list-item prepend-icon="mdi-briefcase" title="專案管理" value="admin-project"></v-list-item>
+        </v-list-group>
       </v-list>
     </v-navigation-drawer>
 
@@ -50,11 +63,13 @@
     <Profile v-if="selectedComponent[0]=='profile'" />
     <Admin v-if="selectedComponent[0]=='admin'" />
 
+    <AdminPunch v-if="selectedComponent[0]=='admin-punch'" />
+
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { userLogout, checkLogin } from '@/lib/auth';
 import { userInfo } from '@/lib/user';
@@ -63,6 +78,8 @@ import PunchClock from '@/components/Home/PunchClock.vue';
 import Summary from '@/components/Home/Summary.vue';
 import Profile from '@/components/Home/Profile.vue';
 import Admin from '@/components/Home/Admin.vue';
+
+import AdminPunch from '@/components/Home/Admin/Punch.vue';
 
 const router = useRouter();
 
@@ -84,6 +101,10 @@ const onClickNav = (e) => {
   selectedComponent.value = [value];
   showNav.value = false;
 };
+
+const openedPanel = computed(() => {
+  return [selectedComponent.value[0].split('-')[0]];
+});
 
 onMounted(async () => {
   const isLogin = await checkLogin();

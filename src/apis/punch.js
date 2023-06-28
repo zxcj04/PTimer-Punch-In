@@ -44,4 +44,9 @@ export default {
     const session_id = payload.session_id;
     return axios.get(PREFIX + '/admin/list', {headers: {'SESSION-ID': session_id}});
   },
+  adminRecoverPunch(payload) {
+    const session_id = payload.session_id;
+    const punch_id = payload.punch_id;
+    return axios.post(PREFIX + '/admin/recover', {punch_id}, {headers: {'SESSION-ID': session_id}});
+  },
 }

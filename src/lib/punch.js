@@ -85,6 +85,44 @@ const getPunchs = async (split=false) => {
   }
 }
 
+const getAdminAllPunchs = async () => {
+  const { cookies } = useCookies();
+  try {
+    const response = await apis.getAdminAllPunchs({ session_id: cookies.get("session_id") });
+      return [true, response.data.punches];
+  } catch (error) {
+    console.log(error);
+    return [false, []];
+  }
+}
+
+const getAdminAllPunchsByDates = async ({start, end}) => {
+  const { cookies } = useCookies();
+  const payload = {
+    session_id: cookies.get("session_id"),
+    start,
+    end,
+  };
+  try {
+    const response = await apis.getAdminAllPunchs(payload);
+    return [true, response.data.punches];
+  } catch (error) {
+    console.log(error);
+    return [false, []];
+  }
+}
+
+const adminRecoverPunch = async (punch_id) => {
+  const { cookies } = useCookies();
+  try {
+    const response = await apis.adminRecoverPunch({ session_id: cookies.get("session_id"), punch_id });
+    return [true, response.data.msg];
+  } catch (error) {
+    console.log(error);
+    return [false, error.response.data.msg];
+  }
+}
+
 const getActivePunch = async () => {
   const { cookies } = useCookies();
   try {
@@ -119,6 +157,9 @@ export {
   userPunchIn,
   userPunchOut,
   getPunchs,
+  getAdminAllPunchs,
+  getAdminAllPunchsByDates,
+  adminRecoverPunch,
   getPunchsByDates,
   getActivePunch,
   updatePunch,

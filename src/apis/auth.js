@@ -14,4 +14,8 @@ export default {
     const session_id = payload.session_id;
     return axios.post(PREFIX + '/check_session', {}, {headers: {'SESSION-ID': session_id}});
   },
+  checkAdmin(payload) {
+    const session_id = payload.session_id;
+    return axios.post(PREFIX + '/check_admin', {}, {headers: {'SESSION-ID': session_id}});
+  },
 }

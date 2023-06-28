@@ -11,7 +11,7 @@
         </template>
 
         <v-toolbar-title class="text-h6 font-weight-bold">
-          打卡記錄查詢
+          打卡記錄查詢 - 管理員
         </v-toolbar-title>
 
         <template v-slot:append>
@@ -47,26 +47,52 @@
           style="min-height: 50vh;">
           <template v-slot:top>
           </template>
+          <template v-slot:item.user_name="{ item }">
+            <v-chip
+              color="primary"
+              label
+              small
+              variant="outlined"
+            >
+              <v-icon start icon="mdi-account-circle-outline"></v-icon>
+              {{ item.raw.user_name }}
+            </v-chip>
+          </template>
           <template v-slot:item.punch_in_time="{ item }">
             {{ formattedDate(item.raw.punch_in_time) }}
           </template>
           <template v-slot:item.punch_out_time="{ item }">
             {{ item.raw.punch_out_time ? formattedDate(item.raw.punch_out_time) : '尚未打卡下班' }}
           </template>
+          <template v-slot:item.note="{ item }">
+            <v-chip
+              color="red"
+              label
+              small
+              variant="outlined"
+              v-if="item.raw.is_delete"
+            >
+              <v-icon start icon="mdi-close-circle-outline"></v-icon>
+              已刪除
+            </v-chip>
+          </template>
           <template v-slot:item.actions="{ item }">
-            <div v-if="item.raw.editable">
+            <div>
               <v-icon size="small" @click="openEditDialog(item.raw)">
                 mdi-pencil
               </v-icon>
-              <v-icon size="small" @click="deleteItem(item.raw)" :color="isDeleteItemConfirm ? 'red' : ''">
-                {{ isDeleteItemConfirm ? 'mdi-check-bold' : 'mdi-delete' }}
+              <v-icon v-if="!item.raw.is_delete" size="small" @click="deleteItem(item.raw)" :color="isDeleteItemConfirm == item.raw.punch_id ? 'red' : ''">
+                {{ isDeleteItemConfirm == item.raw.punch_id ? 'mdi-check-bold' : 'mdi-delete' }}
               </v-icon>
+              <v-icon v-else size="small" @click="recoverItem(item.raw)" :color="isDeleteItemConfirm == item.raw.punch_id ? 'red' : ''">
+                {{ isDeleteItemConfirm == item.raw.punch_id ? 'mdi-check-bold' : 'mdi-restore' }}
+              </v-icon>
+              <v-tooltip location="bottom" text="因為搜尋區間不完整，所以此筆紀錄的工作時數只計算了搜尋區間內的部分。">
+                <template v-slot:activator="{ props }">
+                  <v-icon v-bind="props" v-if="showCutWorkingHourAlert(item.raw)">mdi-alert</v-icon>
+                </template>
+              </v-tooltip>
             </div>
-            <v-tooltip location="bottom" text="因為搜尋區間不完整，所以此筆紀錄的工作時數只計算了搜尋區間內的部分。">
-              <template v-slot:activator="{ props }">
-                <v-icon v-bind="props" v-if="showCutWorkingHourAlert(item.raw)">mdi-alert</v-icon>
-              </template>
-            </v-tooltip>
           </template>
           <template v-slot:no-data>
             <div class="text-center">
@@ -85,8 +111,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { checkLogin } from '@/lib/auth';
-import { getPunchs, getPunchsByDates, updatePunch, deletePunch } from '@/lib/punch';
+import { checkLogin, checkAdmin, userLogout } from '@/lib/auth';
+import { getAdminAllPunchs, getAdminAllPunchsByDates, updatePunch, adminRecoverPunch, deletePunch } from '@/lib/punch';
 import { getProjectList } from '@/lib/project';
 import { formattedDate } from '@/lib/misc';
 
@@ -97,10 +123,12 @@ const router = useRouter();
 const itemsPerPage = ref(10);
 
 const headers = [
+  { title: '員工姓名', align: 'center', key: 'user_name' },
   { title: '專案名稱', align: 'end', key: 'project_name' },
   { title: '上班打卡時間', align: 'end', key: 'punch_in_time' },
   { title: '下班打卡時間', align: 'end', key: 'punch_out_time' },
   { title: '工作時數', align: 'end', key: 'working_hours' },
+  { title: '備註', align: 'center', key: 'note'},
   { title: '操作', key: 'actions', sortable: false },
 ];
 
@@ -170,16 +198,28 @@ const openEditDialog = async (item) => {
   editProps.value.punch = item;
 };
 
-const isDeleteItemConfirm = ref(false);
+const isDeleteItemConfirm = ref(null);
 const deleteItem = async (item) => {
-  if (!isDeleteItemConfirm.value) {
-    isDeleteItemConfirm.value = true;
+  if (isDeleteItemConfirm.value != item.punch_id) {
+    isDeleteItemConfirm.value = item.punch_id;
     return;
   }
 
   await deletePunch(item.punch_id);
 
-  isDeleteItemConfirm.value = false;
+  isDeleteItemConfirm.value = null;
+
+  await updatePunchs();
+};
+const recoverItem = async (item) => {
+  if (isDeleteItemConfirm.value != item.punch_id) {
+    isDeleteItemConfirm.value = item.punch_id;
+    return;
+  }
+
+  await adminRecoverPunch(item.punch_id);
+
+  isDeleteItemConfirm.value = null;
 
   await updatePunchs();
 };
@@ -216,10 +256,10 @@ const updatePunchs = async (dates = null) => {
   isLoadingPunchs.value = true;
   let p;
   if (dates === null) {
-    const [, tmp] = await getPunchs();
+    const [, tmp] = await getAdminAllPunchs();
     p = tmp;
   } else {
-    const [, tmp] = await getPunchsByDates({
+    const [, tmp] = await getAdminAllPunchsByDates({
       start: dates[0],
       end: dates[1],
     });
@@ -245,14 +285,20 @@ const init = async () => {
     return;
   }
 
-  isDeleteItemConfirm.value = false;
+  const isAdmin = await checkAdmin();
+  if (!isAdmin) {
+    await userLogout();
+    router.push('login');
+    return;
+  }
+
+  isDeleteItemConfirm.value = null;
 
   initQueryDate();
   query.value.hasResult = false;
 
   await updatePunchs();
   await updateProjects();
-
   isLoadingPunchs.value = false;
 };
 
@@ -265,6 +311,6 @@ onMounted(init);
 }
 
 .custom-table {
-  min-width: 800px;
+  min-width: 1100px;
 }
 </style>
