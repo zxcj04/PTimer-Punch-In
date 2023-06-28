@@ -18,4 +18,10 @@ export default {
     const session_id = payload.session_id;
     return axios.post(PREFIX + '/check_admin', {}, {headers: {'SESSION-ID': session_id}});
   },
+  changePassword(payload) {
+    const session_id = payload.session_id;
+    const old_password = payload.old_password;
+    const new_password = payload.new_password;
+    return axios.post(PREFIX + '/change_password', {old_password, new_password}, {headers: {'SESSION-ID': session_id}});
+  }
 }

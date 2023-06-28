@@ -15,7 +15,7 @@
         </v-toolbar-title>
 
         <template v-slot:append>
-          <v-icon @click="init">mdi-restart</v-icon>
+          <v-icon class="mr-2" @click="init">mdi-restart</v-icon>
         </template>
       </v-toolbar>
 

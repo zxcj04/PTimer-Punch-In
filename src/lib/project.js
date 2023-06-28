@@ -5,7 +5,7 @@ const getProjectInfo = async (project_id) => {
   const { cookies } = useCookies();
   try {
     const response = await apis.projectInfo({ session_id: cookies.get("session_id"), project_id });
-    return [true, response.data.project];
+    return [true, response.data.project_info];
   } catch (error) {
     console.log(error);
     return [false, error.response.data.msg];

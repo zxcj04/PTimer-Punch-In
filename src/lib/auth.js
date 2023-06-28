@@ -56,9 +56,25 @@ const checkAdmin = async () => {
   }
 }
 
+const changePassword = async (old_password, new_password) => {
+  const { cookies } = useCookies();
+  try {
+    await apis.changePassword({
+      session_id: cookies.get("session_id"),
+      old_password,
+      new_password,
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
 export {
   userLogin,
   userLogout,
   checkLogin,
   checkAdmin,
+  changePassword,
 };

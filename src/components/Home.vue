@@ -7,7 +7,7 @@
     >
       <v-list>
         <v-list-item
-          :prepend-avatar="user.avatar"
+          :prepend-icon="isAdmin? 'mdi-shield-crown': 'mdi-account-circle'"
           :title="user.name"
         ></v-list-item>
       </v-list>
@@ -23,7 +23,7 @@
         <v-list-item prepend-icon="mdi-timeline-check" title="打卡" value="punch"></v-list-item>
         <v-list-item prepend-icon="mdi-list-box-outline" title="統計" value="summary"></v-list-item>
         <v-list-item prepend-icon="mdi-account" title="個人資料" value="profile"></v-list-item>
-        <v-list-group value="admin">
+        <v-list-group value="admin" v-if="isAdmin">
           <template v-slot:activator="{ props }">
             <v-list-item
               v-bind="props"
@@ -60,10 +60,12 @@
 
     <PunchClock v-if="selectedComponent[0]=='punch'" />
     <Summary v-if="selectedComponent[0]=='summary'" />
-    <Profile v-if="selectedComponent[0]=='profile'" />
+    <Profile v-if="selectedComponent[0]=='profile'" v-on:userUpdated="updateUserInfo" />
     <Admin v-if="selectedComponent[0]=='admin'" />
 
+    <AdminUser v-if="selectedComponent[0]=='admin-user'" />
     <AdminPunch v-if="selectedComponent[0]=='admin-punch'" />
+    <AdminProject v-if="selectedComponent[0]=='admin-project'" />
 
   </v-container>
 </template>
@@ -71,7 +73,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { userLogout, checkLogin } from '@/lib/auth';
+import { userLogout, checkLogin, checkAdmin } from '@/lib/auth';
 import { userInfo } from '@/lib/user';
 
 import PunchClock from '@/components/Home/PunchClock.vue';
@@ -79,14 +81,17 @@ import Summary from '@/components/Home/Summary.vue';
 import Profile from '@/components/Home/Profile.vue';
 import Admin from '@/components/Home/Admin.vue';
 
+import AdminUser from '@/components/Home/Admin/User.vue';
 import AdminPunch from '@/components/Home/Admin/Punch.vue';
+import AdminProject from '@/components/Home/Admin/Project.vue';
 
 const router = useRouter();
 
 const user = ref({
   name: "載入中",
-  avatar: "https://randomuser.me/api/portraits/men/78.jpg"
 });
+
+const isAdmin = ref(false);
 
 const selectedComponent = ref(["punch"]);
 const showNav = ref(false);
@@ -106,6 +111,15 @@ const openedPanel = computed(() => {
   return [selectedComponent.value[0].split('-')[0]];
 });
 
+const updateUserInfo = async () => {
+  isAdmin.value = await checkAdmin();
+
+  const [isSuccess, result] = await userInfo();
+  if (isSuccess) {
+    user.value = result;
+  }
+};
+
 onMounted(async () => {
   const isLogin = await checkLogin();
   if (!isLogin) {
@@ -113,11 +127,7 @@ onMounted(async () => {
     return;
   }
 
-  const [isSuccess, result] = await userInfo();
-  if (isSuccess) {
-    user.value = result;
-    user.value.avatar = "https://randomuser.me/api/portraits/men/78.jpg";
-  }
+  await updateUserInfo();
 });
 </script>
 
