@@ -61,12 +61,16 @@
                         </v-row>
                       </v-item-group>
                     </v-expand-transition>
+                    <v-alert v-if="!isLoading && projects.length === 0" class="mt-4" color="warning">
+                      <v-icon left>mdi-alert</v-icon>
+                      <span>尚未加入專案，請聯繫專案的負責人</span>
+                    </v-alert>
                     <v-btn
                       v-on:click="punchInProcess"
                       :color="isSelectingProject? 'green': 'primary'"
                       class="mx-auto mt-3"
                       width="100%"
-                      :disabled="isLoading || (isSelectingProject && !selectedProject)"
+                      :disabled="isLoading || (isSelectingProject && !selectedProject) || projects.length === 0"
                     >
                       <v-icon>mdi-clock-in</v-icon>
                       {{ isSelectingProject? '確認打卡': '我要打卡'}}
@@ -139,7 +143,7 @@ import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { checkLogin } from '@/lib/auth';
 import { userPunchIn, userPunchOut, getPunchs, getActivePunch } from '@/lib/punch';
-import { getProjectList } from '@/lib/project';
+import { getUserProjects } from '@/lib/user';
 
 import Clock from '@/components/Home/Clock.vue';
 import Timer from '@/components/Home/Timer.vue';
@@ -211,7 +215,7 @@ const updateAllPunchs = () => {
 };
 
 const updateProjects = async () => {
-  const [result, p] = await getProjectList();
+  const [result, p] = await getUserProjects();
   if (result) {
     projects.value = p;
   } else {

@@ -43,8 +43,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { formattedDate } from '@/lib/misc';
+import { getProjectList } from '@/lib/project';
 
 const props = defineProps(['dialog', 'punch', 'projects']);
 const emit = defineEmits(['update:dialog', 'update:punch', 'editItem']);
@@ -56,7 +57,7 @@ const onOpen = () => {
   else
     editedItem.value.punch_out_time = undefined;
   editedItem.value.project_id = _punch.value.project_id;
-  editedItem.value.project_name = props.projects.find((project) => project.project_id === _punch.value.project_id).project_name;
+  editedItem.value.project_name = allProjects.value.find((project) => project.project_id === _punch.value.project_id).project_name;
 };
 const close = () => emit('update:dialog', false);
 const save = () => {
@@ -87,7 +88,7 @@ const project_names = computed(() => {
 });
 
 const to_project_id = (project_name) => {
-  const project = props.projects.find((project) => project.project_name === project_name);
+  const project = allProjects.value.find((project) => project.project_name === project_name);
   return project.project_id;
 };
 
@@ -127,6 +128,21 @@ const _punch = computed({
   set(value) {
     emit('update:punch', value);
   }
+});
+
+const allProjects = ref([]);
+
+const updateProjects = async () => {
+  const [result, p] = await getProjectList();
+  if (result) {
+    allProjects.value = p;
+  } else {
+    allProjects.value = [];
+  }
+};
+
+onMounted(async () => {
+  await updateProjects();
 });
 </script>
 

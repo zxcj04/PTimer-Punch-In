@@ -23,5 +23,15 @@ export default {
     const old_password = payload.old_password;
     const new_password = payload.new_password;
     return axios.post(PREFIX + '/change_password', {old_password, new_password}, {headers: {'SESSION-ID': session_id}});
-  }
+  },
+  administer(payload) {
+    const session_id = payload.session_id;
+    const user_id = payload.user_id;
+    return axios.post(PREFIX + '/administer', {user_id}, {headers: {'SESSION-ID': session_id}});
+  },
+  revokeAdmin(payload) {
+    const session_id = payload.session_id;
+    const user_id = payload.user_id;
+    return axios.post(PREFIX + '/revoke_admin', {user_id}, {headers: {'SESSION-ID': session_id}});
+  },
 }

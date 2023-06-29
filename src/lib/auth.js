@@ -71,10 +71,40 @@ const changePassword = async (old_password, new_password) => {
   }
 }
 
+const administer = async (user_id) => {
+  const { cookies } = useCookies();
+  try {
+    await apis.administer({
+      session_id: cookies.get("session_id"),
+      user_id,
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+const revokeAdmin = async (user_id) => {
+  const { cookies } = useCookies();
+  try {
+    await apis.revokeAdmin({
+      session_id: cookies.get("session_id"),
+      user_id,
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
 export {
   userLogin,
   userLogout,
   checkLogin,
   checkAdmin,
   changePassword,
+  administer,
+  revokeAdmin,
 };

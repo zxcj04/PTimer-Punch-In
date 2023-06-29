@@ -11,11 +11,11 @@
         </template>
 
         <v-toolbar-title class="text-h6 font-weight-bold">
-          打卡記錄查詢 - 管理員
+          打卡記錄 - 管理員
         </v-toolbar-title>
 
         <template v-slot:append>
-          <v-icon @click="init">mdi-restart</v-icon>
+          <v-icon class="mr-2" @click="init">mdi-restart</v-icon>
         </template>
       </v-toolbar>
 
@@ -128,7 +128,7 @@ const headers = [
   { title: '上班打卡時間', align: 'end', key: 'punch_in_time' },
   { title: '下班打卡時間', align: 'end', key: 'punch_out_time' },
   { title: '工作時數', align: 'end', key: 'working_hours' },
-  { title: '備註', align: 'center', key: 'note'},
+  { title: '備註', align: 'center', key: 'note', sortable: false },
   { title: '操作', key: 'actions', sortable: false },
 ];
 
@@ -279,6 +279,7 @@ const updatePunchs = async (dates = null) => {
 };
 
 const init = async () => {
+  isLoadingPunchs.value = true;
   const isLogin = await checkLogin();
   if (!isLogin) {
     router.push('login');
@@ -305,7 +306,7 @@ const init = async () => {
 onMounted(init);
 </script>
 
-<style>
+<style scoped>
 .custom-table-container {
   overflow-x: scroll;
 }

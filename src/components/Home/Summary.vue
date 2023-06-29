@@ -87,7 +87,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
 import { checkLogin } from '@/lib/auth';
 import { getPunchs, getPunchsByDates, updatePunch, deletePunch } from '@/lib/punch';
-import { getProjectList } from '@/lib/project';
+import { getUserProjects } from '@/lib/user';
 import { formattedDate } from '@/lib/misc';
 
 import EditPunch from '@/components/Home/EditPunch.vue';
@@ -204,7 +204,7 @@ const toHoursAndMinutes = (totalSeconds) => {
 const projects = ref([]);
 
 const updateProjects = async () => {
-  const [result, p] = await getProjectList();
+  const [result, p] = await getUserProjects();
   if (result) {
     projects.value = p;
   } else {
@@ -259,7 +259,7 @@ const init = async () => {
 onMounted(init);
 </script>
 
-<style>
+<style scoped>
 .custom-table-container {
   overflow-x: scroll;
 }

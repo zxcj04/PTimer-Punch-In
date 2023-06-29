@@ -40,7 +40,7 @@
               <v-text-field v-model="user.telephone" label="電話" :readonly="!isEditing"></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="user.telegram" label="Telegram ID" :readonly="!isEditing"></v-text-field>
+              <v-text-field v-model="user.telegram" label="Telegram ID" :readonly="!isEditing" placeholder="@example_user"></v-text-field>
             </v-col>
           </v-row>
 
