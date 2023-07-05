@@ -22,6 +22,19 @@
       <v-card-text>
         <v-form v-model="query.valid">
           <v-row justify="center" style="text-align: center">
+            <v-col cols="12" md="2">
+              <v-autocomplete
+                v-model="query.user_name"
+                :items="userNames"
+                label="員工"
+                density="compact"
+                variant="underlined"
+                :hint="query.user_name? '': '留空以顯示全部'"
+                persistent-hint
+                clearable
+                menu-icon=""
+              />
+            </v-col>
             <v-col cols="12" md="6">
               <VueDatePicker v-model="query.dates" dark range multi-calendars hide-offset-dates
                 time-picker-inline auto-apply :start-date="query.dates[0]" focus-start-date :clearable="false"
@@ -109,9 +122,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router';
 import { checkLogin, checkAdmin, userLogout } from '@/lib/auth';
+import { getAdminUserList } from '@/lib/user';
 import { getAdminAllPunchs, getAdminAllPunchsByDates, updatePunch, adminRecoverPunch, deletePunch } from '@/lib/punch';
 import { getProjectList } from '@/lib/project';
 import { formattedDate } from '@/lib/misc';
@@ -133,40 +147,43 @@ const headers = [
 ];
 
 const query = ref({
+  user_name: null,
   dates: [new Date(), new Date()],
   hasResult: false,
   result: null,
   resultDates: [new Date(), new Date()],
 });
 
-const initQueryDate = () => {
+const initQuery = () => {
   const startDate = new Date();
   const endDate = new Date();
 
   startDate.setHours(0, 0, 0, 0);
-  endDate.setHours(23, 59, 59, 999);
+  endDate.setHours(23, 59, 59, 0);
 
+  query.value.user_name = null;
   query.value.dates = [startDate, endDate];
 };
 
 const queryPunches = async () => {
   query.value.hasResult = false;
 
-  await updatePunchs(query.value.dates);
+  await updatePunchs(query.value.user_name, query.value.dates);
 
   const startDate = query.value.dates[0];
   const endDate = query.value.dates[1];
 
   let totalWorkingHours = 0;
   totalWorkingHours = punchs.value.reduce((acc, cur) => {
-    if (cur.working_timer)
+    if (cur.working_timer && !cur.is_delete)
       acc += cur.working_timer;
     return acc;
   }, 0);
   totalWorkingHours = toHoursAndMinutes(totalWorkingHours);
 
   query.value.hasResult = punchs.value.length > 0;
-  query.value.result = `${formattedDate(startDate)} 到 ${formattedDate(endDate)} 共工作了 ${totalWorkingHours.h} 小時, ${totalWorkingHours.m} 分鐘, ${totalWorkingHours.s} 秒`;
+  const namePrefix = query.value.user_name ? `${query.value.user_name} 在 ` : '所有人在 ';
+  query.value.result = `${namePrefix}${formattedDate(startDate)} 到 ${formattedDate(endDate)} 共工作了 ${totalWorkingHours.h} 小時, ${totalWorkingHours.m} 分鐘, ${totalWorkingHours.s} 秒`;
   query.value.resultDates = [startDate, endDate];
 };
 
@@ -224,6 +241,31 @@ const recoverItem = async (item) => {
   await updatePunchs();
 };
 
+const users = ref([]);
+
+const updateUsers = async () => {
+  const [result, u] = await getAdminUserList();
+  if (!result)
+    return;
+
+  users.value = u;
+};
+
+const userNames = computed(() => {
+  return users.value.map((u) => {
+    return u.name;
+  });
+});
+
+const toUserId = (name) => {
+  const user = users.value.find((u) => {
+    return u.name == name;
+  });
+  if (!user)
+    return null;
+  return user.user_id;
+};
+
 const punchs = ref([]);
 const isLoadingPunchs = ref(true);
 
@@ -252,14 +294,20 @@ const updateProjects = async () => {
   }
 };
 
-const updatePunchs = async (dates = null) => {
+const updatePunchs = async (user_name = null, dates = null) => {
+  if (query.value.hasResult) {
+    user_name = query.value.user_name;
+    dates = query.value.dates;
+  }
   isLoadingPunchs.value = true;
   let p;
-  if (dates === null) {
+  if (user_name === null && dates === null) {
     const [, tmp] = await getAdminAllPunchs();
     p = tmp;
   } else {
+    const user_id = toUserId(query.value.user_name);
     const [, tmp] = await getAdminAllPunchsByDates({
+      user_id: user_id,
       start: dates[0],
       end: dates[1],
     });
@@ -295,11 +343,12 @@ const init = async () => {
 
   isDeleteItemConfirm.value = null;
 
-  initQueryDate();
+  initQuery();
   query.value.hasResult = false;
 
   await updatePunchs();
   await updateProjects();
+  await updateUsers();
   isLoadingPunchs.value = false;
 };
 

@@ -88,7 +88,7 @@ const submit = async () => {
   const [isLogin, msg] = await userLogin(account.value, password.value);
   if (!isLogin) {
     alertType.value = AlertType.Error;
-    alertMessage.value = '登入失敗，請檢查您的電子信箱及密碼是否正確';
+    alertMessage.value = msg;
     return;
   } else {
     alertType.value = AlertType.Success;

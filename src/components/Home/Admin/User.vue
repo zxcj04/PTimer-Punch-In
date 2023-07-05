@@ -12,6 +12,7 @@
         </v-toolbar-title>
 
         <template v-slot:append>
+          <v-icon class="mr-2" @click="openCreateDialog">mdi-plus-box</v-icon>
           <v-icon class="mr-2" @click="init">mdi-restart</v-icon>
         </template>
       </v-toolbar>
@@ -25,6 +26,12 @@
             <v-chip :color="item.raw.is_admin? '#FFD700': 'primary'" label small variant="outlined">
               <v-icon start :icon="item.raw.is_admin ? 'mdi-shield-crown' : 'mdi-account-circle'"></v-icon>
               {{ item.raw.name }}
+            </v-chip>
+          </template>
+          <template v-slot:item.telegram="{ item }">
+            <v-chip v-if="item.raw.telegram" color="blue" label small variant="outlined" @click="goToTelegram(item.raw.telegram)">
+              @{{ item.raw.telegram.split('@')[1] }}
+              <v-icon end icon="mdi-arrow-top-right"></v-icon>
             </v-chip>
           </template>
           <template v-slot:item.note="{ item }">
@@ -50,11 +57,11 @@
               <v-icon class="mx-1" size="small" @click="openEditDialog(item.raw)">
                 mdi-pencil
               </v-icon>
-              <v-icon class="mx-1" v-if="item.raw.active" size="small" @click="inactiveUser(item.raw)"
+              <v-icon class="mx-1" v-if="item.raw.active && !item.raw.is_admin" size="small" @click="inactiveUser(item.raw)"
                 :color="isUserActionConfirm == item.raw.user_id ? 'red' : ''">
                 {{ isUserActionConfirm == item.raw.user_id ? 'mdi-minus-box' : 'mdi-minus-box-outline' }}
               </v-icon>
-              <v-icon class="mx-1" v-else size="small" @click="activeUser(item.raw)"
+              <v-icon class="mx-1" v-if="!item.raw.active" size="small" @click="activeUser(item.raw)"
                 :color="isUserActionConfirm == item.raw.user_id ? 'green' : ''">
                 {{ isUserActionConfirm == item.raw.user_id ? 'mdi-checkbox-marked-circle' :
                   'mdi-checkbox-marked-circle-outline' }}
@@ -71,6 +78,7 @@
       </div>
     </v-card>
 
+    <NewUser v-model:dialog="createProps.openDialog" v-on:newItem="newItem"></NewUser>
     <EditUser v-model:dialog="editProps.openDialog" v-model:user="editProps.user" v-on:editItem="editItem"
       :projects="projects"></EditUser>
   </v-main>
@@ -79,11 +87,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { checkLogin, checkAdmin, userLogout, administer, revokeAdmin } from '@/lib/auth';
+import { checkLogin, checkAdmin, userLogout, administer, revokeAdmin, userCreate } from '@/lib/auth';
 import { getAdminUserList, adminActiveUser, adminInactiveUser, adminUpdateUser } from '@/lib/user';
 import { getProjectList } from '@/lib/project';
 
-import EditUser from '@/components/Home/Admin/EditUser.vue';
+import NewUser from '@/components/Home/Admin/Dialogs/NewUser.vue';
+import EditUser from '@/components/Home/Admin/Dialogs/EditUser.vue';
 
 const router = useRouter();
 
@@ -113,6 +122,26 @@ const editItem = async (user_id, user) => {
 const openEditDialog = async (item) => {
   editProps.value.openDialog = true;
   editProps.value.user = item;
+};
+
+const createProps = ref({
+  openDialog: false,
+  user: null,
+});
+
+const newItem = async (user) => {
+  const [result, user_id] = await userCreate(user);
+
+  if (result) {
+    await editItem(user_id, user);
+  }
+
+  await updateUsers();
+};
+
+const openCreateDialog = () => {
+  createProps.value.openDialog = true;
+  createProps.value.user = null;
 };
 
 const isUserAdminActionConfirm = ref(null);
@@ -188,6 +217,11 @@ const updateUsers = async () => {
     users.value = [];
   }
   isLoadingUsers.value = false;
+};
+
+const goToTelegram = (telegram) => {
+  const clean_telegram = telegram.split('@')[1];
+  window.open(`https://t.me/${clean_telegram}`, '_blank');
 };
 
 const init = async () => {

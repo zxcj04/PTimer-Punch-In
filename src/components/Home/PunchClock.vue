@@ -197,7 +197,12 @@ const punchOut = async () => {
 };
 
 const updatePunchs = async () => {
-  const [, p] = await getPunchs(true);
+  const [result, p] = await getPunchs(true);
+
+  if(!result) {
+    router.push('login');
+  }
+
   punchs.value = p;
 };
 
@@ -217,7 +222,7 @@ const updateAllPunchs = () => {
 const updateProjects = async () => {
   const [result, p] = await getUserProjects();
   if (result) {
-    projects.value = p;
+    projects.value = p.filter((p) => !p.is_delete);
   } else {
     projects.value = [];
   }

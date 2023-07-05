@@ -16,12 +16,26 @@
           label
         >
           <v-icon start icon="mdi-account-circle-outline"></v-icon>
-          {{ projectInfo.project_owner }}
+          {{ projectInfo.project_owner_name }}
         </v-chip>
       </template>
     </v-toolbar>
 
+    <v-divider class="mx-3"></v-divider>
+
     <v-card-text>
+      <v-chip
+        class="mb-3"
+        color="red"
+        label
+        small
+        variant="outlined"
+        v-if="projectInfo.is_delete"
+      >
+        <v-icon start icon="mdi-close-circle-outline"></v-icon>
+        已停用
+      </v-chip>
+      <br>
       {{ projectInfo.description }}
     </v-card-text>
   </v-card>

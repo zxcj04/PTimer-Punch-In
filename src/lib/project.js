@@ -23,16 +23,61 @@ const getProjectList = async () => {
   }
 }
 
-const createProject = async (id, name, description) => {
+const createProject = async (project) => {
   const { cookies } = useCookies();
   const payload = {
     session_id: cookies.get("session_id"),
-    id,
-    name,
-    description,
+    project,
   };
   try {
     const response = await apis.createProject(payload);
+    return [true, response.data.msg];
+  } catch (error) {
+    console.log(error);
+    return [false, error.response.data.msg];
+  }
+}
+
+const updateProject = async (project_id, project) => {
+  const { cookies } = useCookies();
+  const payload = {
+    session_id: cookies.get("session_id"),
+    project_id,
+    project,
+  };
+  console.log(payload);
+  try {
+    const response = await apis.updateProject(payload);
+    return [true, response.data.msg];
+  } catch (error) {
+    console.log(error);
+    return [false, error.response.data.msg];
+  }
+}
+
+const recoverProject = async (project_id) => {
+  const { cookies } = useCookies();
+  const payload = {
+    session_id: cookies.get("session_id"),
+    project_id,
+  };
+  try {
+    const response = await apis.recoverProject(payload);
+    return [true, response.data.msg];
+  } catch (error) {
+    console.log(error);
+    return [false, error.response.data.msg];
+  }
+}
+
+const deleteProject = async (project_id) => {
+  const { cookies } = useCookies();
+  const payload = {
+    session_id: cookies.get("session_id"),
+    project_id,
+  };
+  try {
+    const response = await apis.deleteProject(payload);
     return [true, response.data.msg];
   } catch (error) {
     console.log(error);
@@ -44,4 +89,7 @@ export {
   getProjectInfo,
   getProjectList,
   createProject,
+  updateProject,
+  recoverProject,
+  deleteProject,
 };

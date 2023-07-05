@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="_dialog" class="mx-auto custom-dialog" justify="center">
+  <v-dialog v-model="_dialog" class="mx-auto custom-dialog" justify="center" persistent>
     <v-card>
       <v-toolbar color="rgba(0, 0, 0, 0)" theme="dark">
         <template v-slot:prepend>

@@ -42,7 +42,20 @@ export default {
   },
   getAdminAllPunchs(payload) {
     const session_id = payload.session_id;
-    return axios.get(PREFIX + '/admin/list', {headers: {'SESSION-ID': session_id}});
+    const user_id = payload.user_id || null;
+    const start = payload.start || null;
+    const end = payload.end || null;
+    const params = {};
+    if (user_id) {
+      params.user_id = user_id;
+    }
+    if (start) {
+      params.start = start;
+    }
+    if (end) {
+      params.end = end;
+    }
+    return axios.get(PREFIX + '/admin/list', {headers: {'SESSION-ID': session_id}, params: params});
   },
   adminRecoverPunch(payload) {
     const session_id = payload.session_id;

@@ -81,7 +81,13 @@ const getPunchs = async (split=false) => {
   return [true, ret];
   } catch (error) {
     console.log(error);
-    return [false, []];
+
+    if (error.response.status === 401 || error.response.status === 403) {
+      cookies.remove("session_id");
+      return [false, []];
+    }
+
+    return [true, []];
   }
 }
 
@@ -96,10 +102,11 @@ const getAdminAllPunchs = async () => {
   }
 }
 
-const getAdminAllPunchsByDates = async ({start, end}) => {
+const getAdminAllPunchsByDates = async ({user_id, start, end}) => {
   const { cookies } = useCookies();
   const payload = {
     session_id: cookies.get("session_id"),
+    user_id,
     start,
     end,
   };

@@ -10,6 +10,13 @@ export default {
     const session_id = payload.session_id;
     return axios.post(PREFIX + '/logout', {}, {headers: {'SESSION-ID': session_id}});
   },
+  userCreate(payload) {
+    const session_id = payload.session_id;
+    const mail = payload.mail;
+    const password = payload.password;
+    const info = payload.info;
+    return axios.post(PREFIX + '/register', {mail, password, info}, {headers: {'SESSION-ID': session_id}});
+  },
   checkSession(payload) {
     const session_id = payload.session_id;
     return axios.post(PREFIX + '/check_session', {}, {headers: {'SESSION-ID': session_id}});
