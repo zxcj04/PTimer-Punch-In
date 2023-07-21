@@ -204,6 +204,8 @@ const updatePunchs = async () => {
   }
 
   punchs.value = p;
+
+  return result;
 };
 
 const updateActivePunch = async () => {
@@ -213,6 +215,8 @@ const updateActivePunch = async () => {
   } else {
     activePunch.value = null;
   }
+
+  return result;
 };
 
 const updateAllPunchs = () => {
@@ -252,7 +256,10 @@ onMounted(async () => {
   isPageLoading.value = false;
 
   autoUpdatePunchTask.value = setInterval(async () => {
-    await updateAllPunchs();
+    const results = await updateAllPunchs();
+    if (results.some((r) => !r)) {
+      clearInterval(autoUpdatePunchTask.value);
+    }
   }, 2500);
 });
 

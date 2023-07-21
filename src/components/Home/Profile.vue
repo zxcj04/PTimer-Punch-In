@@ -174,7 +174,7 @@ const editUser = async () => {
 
   if (!result) {
     isLoading.value = false;
-    console.warning(msg);
+    console.warn(msg);
     return;
   }
 

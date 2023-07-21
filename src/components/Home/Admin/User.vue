@@ -22,51 +22,64 @@
           class="elevation-1 custom-table" :loading="isLoadingUsers" loading-text="載入使用者中..." fixed-header hover>
           <template v-slot:top>
           </template>
-          <template v-slot:item.name="{ item }">
-            <v-chip :color="item.raw.is_admin? '#FFD700': 'primary'" label small variant="outlined">
-              <v-icon start :icon="item.raw.is_admin ? 'mdi-shield-crown' : 'mdi-account-circle'"></v-icon>
-              {{ item.raw.name }}
-            </v-chip>
-          </template>
-          <template v-slot:item.telegram="{ item }">
-            <v-chip v-if="item.raw.telegram" color="blue" label small variant="outlined" @click="goToTelegram(item.raw.telegram)">
-              @{{ item.raw.telegram.split('@')[1] }}
-              <v-icon end icon="mdi-arrow-top-right"></v-icon>
-            </v-chip>
-          </template>
-          <template v-slot:item.note="{ item }">
-            <v-chip color="warning" label small variant="outlined" v-if="!item.raw.active">
-              <v-icon start icon="mdi-alert"></v-icon>
-              未啟用
-            </v-chip>
-          </template>
-          <template v-slot:item.admin_actions="{ item }">
-            <div>
-              <v-icon class="mx-1" size="small" @click="administerUser(item.raw)" v-if="!item.raw.is_admin"
-                :color="isUserAdminActionConfirm == item.raw.user_id ? 'green' : ''">
-                mdi-arrow-up-bold-hexagon-outline
-              </v-icon>
-              <v-icon class="mx-1" size="small" @click="revokeAdminUser(item.raw)" v-else
-                :color="isUserAdminActionConfirm == item.raw.user_id ? 'red' : ''">
-                mdi-arrow-down-bold
-              </v-icon>
-            </div>
-          </template>
-          <template v-slot:item.actions="{ item }">
-            <div>
-              <v-icon class="mx-1" size="small" @click="openEditDialog(item.raw)">
-                mdi-pencil
-              </v-icon>
-              <v-icon class="mx-1" v-if="item.raw.active && !item.raw.is_admin" size="small" @click="inactiveUser(item.raw)"
-                :color="isUserActionConfirm == item.raw.user_id ? 'red' : ''">
-                {{ isUserActionConfirm == item.raw.user_id ? 'mdi-minus-box' : 'mdi-minus-box-outline' }}
-              </v-icon>
-              <v-icon class="mx-1" v-if="!item.raw.active" size="small" @click="activeUser(item.raw)"
-                :color="isUserActionConfirm == item.raw.user_id ? 'green' : ''">
-                {{ isUserActionConfirm == item.raw.user_id ? 'mdi-checkbox-marked-circle' :
-                  'mdi-checkbox-marked-circle-outline' }}
-              </v-icon>
-            </div>
+
+          <template #item="{ item }">
+            <tr class="v-data-table__tr">
+              <td
+                v-for="(value, key) in item.columns"
+                :key="value"
+                :data-label="headers.filter(e => e.key === key).map(e => e.title)"
+                class="v-data-table__td v-data-table-column--align-start"
+              >
+                <template v-if="key === 'name'">
+                  <v-chip :color="item.raw.is_admin? '#FFD700': 'primary'" label small variant="outlined">
+                    <v-icon start :icon="item.raw.is_admin ? 'mdi-shield-crown' : 'mdi-account-circle'"></v-icon>
+                    {{ item.raw.name }}
+                  </v-chip>
+                </template>
+                <template v-else-if="key === 'telegram'">
+                  <v-chip v-if="item.raw.telegram" color="blue" label small variant="outlined" @click="goToTelegram(item.raw.telegram)">
+                    @{{ item.raw.telegram.split('@')[1] }}
+                    <v-icon end icon="mdi-arrow-top-right"></v-icon>
+                  </v-chip>
+                </template>
+                <template v-else-if="key === 'note'">
+                  <v-chip color="warning" label small variant="outlined" v-if="!item.raw.active">
+                    <v-icon start icon="mdi-alert"></v-icon>
+                    未啟用
+                  </v-chip>
+                </template>
+                <template v-else-if="key === 'admin_actions'">
+                  <div>
+                    <v-icon class="mx-1" size="small" @click="administerUser(item.raw)" v-if="!item.raw.is_admin"
+                      :color="isUserAdminActionConfirm == item.raw.user_id ? 'green' : ''">
+                      mdi-arrow-up-bold-hexagon-outline
+                    </v-icon>
+                    <v-icon class="mx-1" size="small" @click="revokeAdminUser(item.raw)" v-else
+                      :color="isUserAdminActionConfirm == item.raw.user_id ? 'red' : ''">
+                      mdi-arrow-down-bold
+                    </v-icon>
+                  </div>
+                </template>
+                <template v-else-if="key === 'actions'">
+                  <div>
+                    <v-icon class="mx-1" size="small" @click="openEditDialog(item.raw)">
+                      mdi-pencil
+                    </v-icon>
+                    <v-icon class="mx-1" v-if="item.raw.active && !item.raw.is_admin" size="small" @click="inactiveUser(item.raw)"
+                      :color="isUserActionConfirm == item.raw.user_id ? 'red' : ''">
+                      {{ isUserActionConfirm == item.raw.user_id ? 'mdi-minus-box' : 'mdi-minus-box-outline' }}
+                    </v-icon>
+                    <v-icon class="mx-1" v-if="!item.raw.active" size="small" @click="activeUser(item.raw)"
+                      :color="isUserActionConfirm == item.raw.user_id ? 'green' : ''">
+                      {{ isUserActionConfirm == item.raw.user_id ? 'mdi-checkbox-marked-circle' :
+                        'mdi-checkbox-marked-circle-outline' }}
+                    </v-icon>
+                  </div>
+                </template>
+                <template v-else>{{value}}</template>
+              </td>
+            </tr>
           </template>
           <template v-slot:no-data>
             <div class="text-center">
@@ -99,11 +112,11 @@ const router = useRouter();
 const itemsPerPage = ref(10);
 
 const headers = [
-  { title: '姓名', align: 'center', key: 'name' },
-  { title: '電子信箱', align: 'center', key: 'mail' },
-  { title: '電話', align: 'center', key: 'telephone' },
-  { title: 'Telegram', align: 'center', key: 'telegram' },
-  { title: '備註', align: 'center', key: 'note', sortable: false },
+  { title: '姓名', key: 'name' },
+  { title: '電子信箱', key: 'mail' },
+  { title: '電話', key: 'telephone' },
+  { title: 'Telegram', key: 'telegram' },
+  { title: '備註', key: 'note', sortable: false },
   { title: '權限', key: 'admin_actions', sortable: false },
   { title: '操作', key: 'actions', sortable: false },
 ];
@@ -250,11 +263,4 @@ onMounted(init);
 </script>
 
 <style scoped>
-.custom-table-container {
-  overflow-x: scroll;
-}
-
-.custom-table {
-  min-width: 800px;
-}
 </style>

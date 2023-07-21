@@ -47,26 +47,39 @@
           style="min-height: 50vh;">
           <template v-slot:top>
           </template>
-          <template v-slot:item.punch_in_time="{ item }">
-            {{ formattedDate(item.raw.punch_in_time) }}
-          </template>
-          <template v-slot:item.punch_out_time="{ item }">
-            {{ item.raw.punch_out_time ? formattedDate(item.raw.punch_out_time) : '尚未打卡下班' }}
-          </template>
-          <template v-slot:item.actions="{ item }">
-            <div v-if="item.raw.editable">
-              <v-icon size="small" @click="openEditDialog(item.raw)">
-                mdi-pencil
-              </v-icon>
-              <v-icon size="small" @click="deleteItem(item.raw)" :color="isDeleteItemConfirm ? 'red' : ''">
-                {{ isDeleteItemConfirm ? 'mdi-check-bold' : 'mdi-delete' }}
-              </v-icon>
-            </div>
-            <v-tooltip location="bottom" text="因為搜尋區間不完整，所以此筆紀錄的工作時數只計算了搜尋區間內的部分。">
-              <template v-slot:activator="{ props }">
-                <v-icon v-bind="props" v-if="showCutWorkingHourAlert(item.raw)">mdi-alert</v-icon>
-              </template>
-            </v-tooltip>
+
+          <template #item="{ item }">
+            <tr class="v-data-table__tr">
+              <td
+                v-for="(value, key) in item.columns"
+                :key="value"
+                :data-label="headers.filter(e => e.key === key).map(e => e.title)"
+                class="v-data-table__td v-data-table-column--align-start"
+              >
+                <template v-if="key === 'punch_in_time'">
+                  {{ formattedDate(item.raw.punch_in_time) }}
+                </template>
+                <template v-else-if="key === 'punch_out_time'">
+                  {{ item.raw.punch_out_time ? formattedDate(item.raw.punch_out_time) : '尚未打卡下班' }}
+                </template>
+                <template v-else-if="key === 'actions'">
+                  <div v-if="item.raw.editable">
+                    <v-icon size="small" @click="openEditDialog(item.raw)">
+                      mdi-pencil
+                    </v-icon>
+                    <v-icon size="small" @click="deleteItem(item.raw)" :color="isDeleteItemConfirm ? 'red' : ''">
+                      {{ isDeleteItemConfirm ? 'mdi-check-bold' : 'mdi-delete' }}
+                    </v-icon>
+                  </div>
+                  <v-tooltip location="bottom" text="因為搜尋區間不完整，所以此筆紀錄的工作時數只計算了搜尋區間內的部分。">
+                    <template v-slot:activator="{ props }">
+                      <v-icon v-bind="props" v-if="showCutWorkingHourAlert(item.raw)">mdi-alert</v-icon>
+                    </template>
+                  </v-tooltip>
+                </template>
+                <template v-else>{{value}}</template>
+              </td>
+            </tr>
           </template>
           <template v-slot:no-data>
             <div class="text-center">
@@ -97,10 +110,10 @@ const router = useRouter();
 const itemsPerPage = ref(10);
 
 const headers = [
-  { title: '專案名稱', align: 'end', key: 'project_name' },
-  { title: '上班打卡時間', align: 'end', key: 'punch_in_time' },
-  { title: '下班打卡時間', align: 'end', key: 'punch_out_time' },
-  { title: '工作時數', align: 'end', key: 'working_hours' },
+  { title: '專案名稱', key: 'project_name' },
+  { title: '上班打卡時間', key: 'punch_in_time' },
+  { title: '下班打卡時間', key: 'punch_out_time' },
+  { title: '工作時數', key: 'working_hours' },
   { title: '操作', key: 'actions', sortable: false },
 ];
 
@@ -260,11 +273,4 @@ onMounted(init);
 </script>
 
 <style scoped>
-.custom-table-container {
-  overflow-x: scroll;
-}
-
-.custom-table {
-  min-width: 800px;
-}
 </style>

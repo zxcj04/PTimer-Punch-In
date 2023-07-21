@@ -20,54 +20,62 @@
         </template>
       </v-toolbar>
 
-      <div class="custom-table-container">
-        <v-data-table v-model:items-per-page="itemsPerPage" :headers="headers" :items="projects" item-value="name"
-          class="elevation-1 custom-table" :loading="isLoadingProjects" loading-text="載入使用者中..." fixed-header hover>
-          <template v-slot:top>
-          </template>
-          <template v-slot:item.project_owner_name="{ item }">
-            <v-chip color="primary" label small variant="outlined">
-              <v-icon start icon="mdi-account-circle"></v-icon>
-              {{ item.raw.project_owner_name }}
-            </v-chip>
-          </template>
-          <template v-slot:item.note="{ item }">
-            <v-chip
-              color="red"
-              label
-              small
-              variant="outlined"
-              v-if="item.raw.is_delete"
-            >
-              <v-icon start icon="mdi-close-circle-outline"></v-icon>
-              已停用
-            </v-chip>
-          </template>
-          <template v-slot:item.actions="{ item }">
-            <div>
-              <v-icon class="mx-1" size="small" @click="openEditDialog(item.raw)">
-                mdi-pencil
-              </v-icon>
-              <v-icon class="mx-1" v-if="!item.raw.is_delete" size="small" @click="deleteItem(item.raw)" :color="isDeleteItemConfirm == item.raw.project_id ? 'red' : ''">
-                {{ isDeleteItemConfirm == item.raw.project_id ? 'mdi-check-bold' : 'mdi-delete' }}
-              </v-icon>
-              <v-icon class="mx-1" v-else size="small" @click="recoverItem(item.raw)" :color="isDeleteItemConfirm == item.raw.project_id ? 'red' : ''">
-                {{ isDeleteItemConfirm == item.raw.project_id ? 'mdi-check-bold' : 'mdi-restore' }}
-              </v-icon>
-            </div>
-          </template>
-          <template v-slot:no-data>
-            <div class="text-center">
-              <v-icon>mdi-alert-circle-outline</v-icon>
-              沒有專案資料
-            </div>
-          </template>
-        </v-data-table>
-      </div>
+      <v-card-text>
+
+        <div class="custom-table-container">
+          <v-data-table v-model:items-per-page="itemsPerPage" :headers="headers" :items="projects" item-value="name"
+            class="elevation-1 custom-table" :loading="isLoadingProjects" loading-text="載入使用者中..." fixed-header hover>
+            <template v-slot:top>
+            </template>
+            <template #item="{ item }">
+              <tr class="v-data-table__tr">
+                <td v-for="(value, key) in item.columns" :key="value"
+                  :data-label="headers.filter(e => e.key === key).map(e => e.title)"
+                  class="v-data-table__td v-data-table-column--align-start">
+                  <template v-if="key === 'project_owner_name'">
+                    <v-chip color="primary" label small variant="outlined">
+                      <v-icon start icon="mdi-account-circle"></v-icon>
+                      {{ value }}
+                    </v-chip>
+                  </template>
+                  <template v-else-if="key === 'note'">
+                    <v-chip color="red" label small variant="outlined" v-if="item.raw.is_delete">
+                      <v-icon start icon="mdi-close-circle-outline"></v-icon>
+                      已停用
+                    </v-chip>
+                  </template>
+                  <template v-else-if="key === 'actions'">
+                    <div>
+                      <v-icon class="mx-1" size="small" @click="openEditDialog(item.raw)">
+                        mdi-pencil
+                      </v-icon>
+                      <v-icon class="mx-1" v-if="!item.raw.is_delete" size="small" @click="deleteItem(item.raw)"
+                        :color="isDeleteItemConfirm == item.raw.project_id ? 'red' : ''">
+                        {{ isDeleteItemConfirm == item.raw.project_id ? 'mdi-check-bold' : 'mdi-delete' }}
+                      </v-icon>
+                      <v-icon class="mx-1" v-else size="small" @click="recoverItem(item.raw)"
+                        :color="isDeleteItemConfirm == item.raw.project_id ? 'red' : ''">
+                        {{ isDeleteItemConfirm == item.raw.project_id ? 'mdi-check-bold' : 'mdi-restore' }}
+                      </v-icon>
+                    </div>
+                  </template>
+                  <template v-else>{{ value }}</template>
+                </td>
+              </tr>
+            </template>
+            <template v-slot:no-data>
+              <div class="text-center">
+                <v-icon>mdi-alert-circle-outline</v-icon>
+                沒有專案資料
+              </div>
+            </template>
+          </v-data-table>
+        </div>
+      </v-card-text>
     </v-card>
 
-    <NewProject v-model:dialog="createProps.openDialog" v-on:newItem="newItem"></NewProject>
-    <EditProject v-model:dialog="editProps.openDialog" v-model:project="editProps.project" v-on:editItem="editItem"></EditProject>
+    <NewProject v-model:dialog="createProps.openDialog" v-on:newItem="newItem" />
+    <EditProject v-model:dialog="editProps.openDialog" v-model:project="editProps.project" v-on:editItem="editItem" />
   </v-main>
 </template>
 
@@ -85,11 +93,11 @@ const router = useRouter();
 const itemsPerPage = ref(10);
 
 const headers = [
-  { title: '專案名稱', align: 'end', key: 'project_name' },
-  { title: '專案擁有者', align: 'end', key: 'project_owner_name' },
-  { title: '描述', align: 'end', key: 'description' },
-  { title: '備註', align: 'center', key: 'note'},
-  { title: '操作', align: 'center', key: 'actions', sortable: false },
+  { title: '專案名稱', key: 'project_name' },
+  { title: '專案擁有者', key: 'project_owner_name' },
+  { title: '描述', key: 'description' },
+  { title: '備註', key: 'note' },
+  { title: '操作', key: 'actions', sortable: false },
 ];
 
 const createProps = ref({
@@ -189,11 +197,7 @@ onMounted(init);
 </script>
 
 <style scoped>
-.custom-table-container {
-  overflow-x: scroll;
-}
-
-.custom-table {
-  min-width: 1100px;
+.v-card-text {
+  padding: 0;
 }
 </style>
