@@ -119,6 +119,17 @@ const getAdminAllPunchsByDates = async ({user_id, start, end}) => {
   }
 }
 
+const adminCreatePunch = async (punch) => {
+  const { cookies } = useCookies();
+  try {
+    const response = await apis.adminCreatePunch({ session_id: cookies.get("session_id"), punch });
+    return [true, response.data.msg];
+  } catch (error) {
+    console.log(error);
+    return [false, error.response.data.msg];
+  }
+}
+
 const adminRecoverPunch = async (punch_id) => {
   const { cookies } = useCookies();
   try {
@@ -166,6 +177,7 @@ export {
   getPunchs,
   getAdminAllPunchs,
   getAdminAllPunchsByDates,
+  adminCreatePunch,
   adminRecoverPunch,
   getPunchsByDates,
   getActivePunch,

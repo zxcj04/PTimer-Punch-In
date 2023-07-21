@@ -15,6 +15,7 @@
         </v-toolbar-title>
 
         <template v-slot:append>
+          <v-icon class="mr-2" @click="openCreateDialog">mdi-plus-box</v-icon>
           <v-icon class="mr-2" @click="init">mdi-restart</v-icon>
         </template>
       </v-toolbar>
@@ -38,7 +39,7 @@
             <v-col cols="12" md="6">
               <VueDatePicker v-model="query.dates" dark range multi-calendars hide-offset-dates
                 time-picker-inline auto-apply :start-date="query.dates[0]" focus-start-date :clearable="false"
-                menu-class-name="dp-custom-menu" />
+                menu-class-name="dp-custom-menu" :month-change-on-scroll="!isMobile" />
             </v-col>
             <v-col cols="12" md="2">
               <v-btn color="primary" @click="queryPunches" block>查詢</v-btn>
@@ -130,20 +131,28 @@
       </div>
     </v-card>
 
-    <EditPunch v-model:dialog="editProps.openDialog" v-model:punch="editProps.punch" v-on:editItem="editItem" :projects="projects"></EditPunch>
+    <NewPunch v-model:dialog="createProps.openDialog" v-on:newItem="newItem" />
+    <EditPunch v-model:dialog="editProps.openDialog" v-model:punch="editProps.punch" v-on:editItem="editItem" />
   </v-main>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue';
+import { useDisplay } from 'vuetify';
 import { useRouter } from 'vue-router';
 import { checkLogin, checkAdmin, userLogout } from '@/lib/auth';
 import { getAdminUserList } from '@/lib/user';
-import { getAdminAllPunchs, getAdminAllPunchsByDates, updatePunch, adminRecoverPunch, deletePunch } from '@/lib/punch';
+import { getAdminAllPunchs, getAdminAllPunchsByDates, adminCreatePunch, updatePunch, adminRecoverPunch, deletePunch } from '@/lib/punch';
 import { getProjectList } from '@/lib/project';
 import { formattedDate } from '@/lib/misc';
 
+import NewPunch from './Dialogs/NewPunch.vue';
 import EditPunch from '@/components/Home/EditPunch.vue';
+
+const isMobile = computed(() => {
+  const { mobile } = useDisplay();
+  return mobile.value;
+});
 
 const router = useRouter();
 
@@ -230,6 +239,24 @@ const editItem = async (punch_id, punch) => {
 const openEditDialog = async (item) => {
   editProps.value.openDialog = true;
   editProps.value.punch = item;
+};
+
+const createProps = ref({
+  openDialog: false,
+});
+
+const newItem = async (punch) => {
+  const [result, msg] = await adminCreatePunch(punch);
+
+  if (!result) {
+    alert(msg);
+  }
+
+  await updatePunchs();
+};
+
+const openCreateDialog = () => {
+  createProps.value.openDialog = true;
 };
 
 const isDeleteItemConfirm = ref(null);

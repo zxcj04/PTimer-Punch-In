@@ -45,7 +45,6 @@ const updateProject = async (project_id, project) => {
     project_id,
     project,
   };
-  console.log(payload);
   try {
     const response = await apis.updateProject(payload);
     return [true, response.data.msg];

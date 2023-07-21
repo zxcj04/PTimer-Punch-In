@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="_dialog" class="mx-auto custom-dialog" justify="center" persistent>
+  <v-dialog v-model="_dialog" class="mx-auto custom-dialog" justify="center">
     <v-card>
       <v-toolbar color="rgba(0, 0, 0, 0)" theme="dark">
         <template v-slot:prepend>
@@ -19,12 +19,12 @@
           <v-col cols="12" md="4" sm="6">
             <v-text-field label="上班打卡時間" v-model="_punch_in_time_value" readonly></v-text-field>
             <VueDatePicker v-model="editedItem.punch_in_time" enable-seconds inline auto-apply hide-offset-dates
-              :clearable="false" dark :max-date="editedItem.punch_out_time" />
+              :clearable="false" dark :max-date="editedItem.punch_out_time" :month-change-on-scroll="!isMobile" />
           </v-col>
           <v-col cols="12" md="4" sm="6" v-if="editedItem.punch_out_time">
             <v-text-field label="下班打卡時間" v-model="_punch_out_time_value" readonly></v-text-field>
             <VueDatePicker v-model="editedItem.punch_out_time" enable-seconds inline auto-apply hide-offset-dates
-              :clearable="false" dark :min-date="editedItem.punch_in_time" />
+              :clearable="false" dark :min-date="editedItem.punch_in_time" :month-change-on-scroll="!isMobile" />
           </v-col>
         </v-row>
       </v-card-text>
@@ -44,10 +44,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useDisplay } from 'vuetify';
 import { formattedDate } from '@/lib/misc';
 import { getProjectList } from '@/lib/project';
 
-const props = defineProps(['dialog', 'punch', 'projects']);
+const isMobile = computed(() => {
+  const { mobile } = useDisplay();
+  return mobile.value;
+});
+
+const props = defineProps(['dialog', 'punch']);
 const emit = defineEmits(['update:dialog', 'update:punch', 'editItem']);
 
 const onOpen = () => {
@@ -84,7 +90,7 @@ const editedItem = ref({
 });
 
 const project_names = computed(() => {
-  return props.projects.map((project) => project.project_name);
+  return allProjects.value.map((project) => project.project_name);
 });
 
 const to_project_id = (project_name) => {

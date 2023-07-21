@@ -25,7 +25,7 @@
             <v-col cols="12" md="6">
               <VueDatePicker v-model="query.dates" dark range multi-calendars hide-offset-dates
                 time-picker-inline auto-apply :start-date="query.dates[0]" focus-start-date :clearable="false"
-                menu-class-name="dp-custom-menu" />
+                menu-class-name="dp-custom-menu" :month-change-on-scroll="!isMobile" />
             </v-col>
             <v-col cols="12" md="2">
               <v-btn color="primary" @click="queryPunches" block>查詢</v-btn>
@@ -91,17 +91,23 @@
       </div>
     </v-card>
 
-    <EditPunch v-model:dialog="editProps.openDialog" v-model:punch="editProps.punch" v-on:editItem="editItem" :projects="projects"></EditPunch>
+    <EditPunch v-model:dialog="editProps.openDialog" v-model:punch="editProps.punch" v-on:editItem="editItem"></EditPunch>
   </v-main>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
+import { useDisplay } from 'vuetify';
 import { useRouter } from 'vue-router';
 import { checkLogin } from '@/lib/auth';
 import { getPunchs, getPunchsByDates, updatePunch, deletePunch } from '@/lib/punch';
 import { getUserProjects } from '@/lib/user';
 import { formattedDate } from '@/lib/misc';
+
+const isMobile = computed(() => {
+  const { mobile } = useDisplay();
+  return mobile.value;
+});
 
 import EditPunch from '@/components/Home/EditPunch.vue';
 
