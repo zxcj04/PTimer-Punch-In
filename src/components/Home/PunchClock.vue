@@ -219,7 +219,13 @@ const updateActivePunch = async () => {
   return result;
 };
 
-const updateAllPunchs = () => {
+const updateAllPunchs = async () => {
+  const isLogin = await checkLogin();
+  if (!isLogin) {
+    router.push('login');
+    return;
+  }
+
   return Promise.all([updateActivePunch(), updatePunchs()]);
 };
 
