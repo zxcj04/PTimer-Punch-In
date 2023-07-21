@@ -34,14 +34,20 @@
               </v-expand-transition>
             </v-card-text>
             <v-card-actions>
-                <v-spacer />
-                <v-btn
-                  type="submit"
-                  color="primary"
-                  :disabled="alertType === undefined || alertType === 'success'"
-                >
-                登入
-                </v-btn>
+              <v-spacer />
+              <v-btn
+                color="primary"
+                @click="register"
+              >
+              註冊
+              </v-btn>
+              <v-btn
+                type="submit"
+                color="primary"
+                :disabled="alertType === undefined || alertType === 'success'"
+              >
+              登入
+              </v-btn>
             </v-card-actions>
           </v-form>
         </v-card>
@@ -49,6 +55,7 @@
     </v-row>
 
     <!-- <Alert /> -->
+    <RegisterDialog v-model:dialog="registerDialog" @registerSuccess="registerSuccess" />
   </v-container>
 </template>
 
@@ -58,6 +65,8 @@ import { useRouter } from 'vue-router'
 
 // import Alert from "./Alert.vue";
 import { userLogin } from '@/lib/auth';
+
+import RegisterDialog from './Register.vue';
 
 class AlertType {
   static Error = 'error';
@@ -76,6 +85,18 @@ const alertMessage = ref('');
 const form = ref();
 
 const router = useRouter();
+
+const registerDialog = ref(false);
+
+const register = () => {
+  registerDialog.value = true;
+}
+
+const registerSuccess = () => {
+  alertShow.value = true;
+  alertType.value = AlertType.Success;
+  alertMessage.value = '已成功註冊，請通知並靜待管理員啟用您的帳號';
+}
 
 const submit = async () => {
   const { valid } = await form.value.validate();

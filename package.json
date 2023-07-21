@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 8088",
-    "build": "vite build",
+    "build-only": "vite build",
+    "build": "vite build --base /peons-punch/",
     "preview": "vite preview"
   },
   "dependencies": {
