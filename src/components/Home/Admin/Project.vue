@@ -80,7 +80,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useDisplay } from 'vuetify';
 import { useRouter } from 'vue-router';
 import { checkLogin, checkAdmin, userLogout } from '@/lib/auth';
 import { getProjectList, createProject, updateProject, recoverProject, deleteProject, } from '@/lib/project';
@@ -90,7 +91,12 @@ import EditProject from '@/components/Home/Admin/Dialogs/EditProject.vue';
 
 const router = useRouter();
 
-const itemsPerPage = ref(10);
+const isMobile = computed(() => {
+  const { mobile } = useDisplay();
+  return mobile.value;
+});
+
+const itemsPerPage = ref(isMobile.value? -1: 10);
 
 const headers = [
   { title: '專案名稱', key: 'project_name' },

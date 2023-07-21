@@ -156,7 +156,7 @@ const isMobile = computed(() => {
 
 const router = useRouter();
 
-const itemsPerPage = ref(10);
+const itemsPerPage = ref(isMobile.value? -1: 10);
 
 const headers = [
   { title: '員工姓名', key: 'user_name' },

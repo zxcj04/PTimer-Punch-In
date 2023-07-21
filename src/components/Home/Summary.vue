@@ -113,7 +113,7 @@ import EditPunch from '@/components/Home/EditPunch.vue';
 
 const router = useRouter();
 
-const itemsPerPage = ref(10);
+const itemsPerPage = ref(isMobile.value? -1: 10);
 
 const headers = [
   { title: '專案名稱', key: 'project_name' },

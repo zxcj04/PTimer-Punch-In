@@ -98,7 +98,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue';
+import { useDisplay } from 'vuetify';
 import { useRouter } from 'vue-router';
 import { checkLogin, checkAdmin, userLogout, administer, revokeAdmin, userCreate } from '@/lib/auth';
 import { getAdminUserList, adminActiveUser, adminInactiveUser, adminUpdateUser } from '@/lib/user';
@@ -107,9 +108,14 @@ import { getProjectList } from '@/lib/project';
 import NewUser from '@/components/Home/Admin/Dialogs/NewUser.vue';
 import EditUser from '@/components/Home/Admin/Dialogs/EditUser.vue';
 
+const isMobile = computed(() => {
+  const { mobile } = useDisplay();
+  return mobile.value;
+});
+
 const router = useRouter();
 
-const itemsPerPage = ref(10);
+const itemsPerPage = ref(isMobile.value? -1: 10);
 
 const headers = [
   { title: '姓名', key: 'name' },
