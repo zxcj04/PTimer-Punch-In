@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { getProjectInfo } from '@/lib/project';
 
 const props = defineProps(['project']);

@@ -50,31 +50,43 @@
                   </v-chip>
                 </template>
                 <template v-else-if="key === 'admin_actions'">
-                  <div>
-                    <v-icon class="mx-1" size="small" @click="administerUser(item.raw)" v-if="!item.raw.is_admin"
-                      :color="isUserAdminActionConfirm == item.raw.user_id ? 'green' : ''">
-                      mdi-arrow-up-bold-hexagon-outline
-                    </v-icon>
-                    <v-icon class="mx-1" size="small" @click="revokeAdminUser(item.raw)" v-else
-                      :color="isUserAdminActionConfirm == item.raw.user_id ? 'red' : ''">
-                      mdi-arrow-down-bold
-                    </v-icon>
-                  </div>
+                  <v-tooltip location="bottom" :text="item.raw.is_admin? '降級': '升級為管理員'">
+                    <template v-slot:activator="{ props }">
+                      <div v-bind="props">
+                        <v-icon class="mx-1" size="small" @click="administerUser(item.raw)" v-if="!item.raw.is_admin"
+                          :color="isUserAdminActionConfirm == item.raw.user_id ? 'green' : ''">
+                          mdi-arrow-up-bold-hexagon-outline
+                        </v-icon>
+                        <v-icon class="mx-1" size="small" @click="revokeAdminUser(item.raw)" v-else
+                          :color="isUserAdminActionConfirm == item.raw.user_id ? 'red' : ''">
+                          mdi-arrow-down-bold
+                        </v-icon>
+                      </div>
+                    </template>
+                  </v-tooltip>
                 </template>
                 <template v-else-if="key === 'actions'">
                   <div>
                     <v-icon class="mx-1" size="small" @click="openEditDialog(item.raw)">
                       mdi-pencil
                     </v-icon>
-                    <v-icon class="mx-1" v-if="item.raw.active && !item.raw.is_admin" size="small" @click="inactiveUser(item.raw)"
-                      :color="isUserActionConfirm == item.raw.user_id ? 'red' : ''">
-                      {{ isUserActionConfirm == item.raw.user_id ? 'mdi-minus-box' : 'mdi-minus-box-outline' }}
-                    </v-icon>
-                    <v-icon class="mx-1" v-if="!item.raw.active" size="small" @click="activeUser(item.raw)"
-                      :color="isUserActionConfirm == item.raw.user_id ? 'green' : ''">
-                      {{ isUserActionConfirm == item.raw.user_id ? 'mdi-checkbox-marked-circle' :
-                        'mdi-checkbox-marked-circle-outline' }}
-                    </v-icon>
+                    <v-tooltip location="bottom" text="禁用" v-if="item.raw.active && !item.raw.is_admin">
+                      <template v-slot:activator="{ props }">
+                        <v-icon v-bind="props" class="mx-1" size="small" @click="inactiveUser(item.raw)"
+                          :color="isUserActionConfirm == item.raw.user_id ? 'red' : ''">
+                          {{ isUserActionConfirm == item.raw.user_id ? 'mdi-minus-box' : 'mdi-minus-box-outline' }}
+                        </v-icon>
+                      </template>
+                    </v-tooltip>
+                    <v-tooltip location="bottom" text="啟用" v-if="!item.raw.active">
+                      <template v-slot:activator="{ props }">
+                        <v-icon v-bind="props" class="mx-1" size="small" @click="activeUser(item.raw)"
+                          :color="isUserActionConfirm == item.raw.user_id ? 'green' : ''">
+                          {{ isUserActionConfirm == item.raw.user_id ? 'mdi-checkbox-marked-circle' :
+                            'mdi-checkbox-marked-circle-outline' }}
+                        </v-icon>
+                      </template>
+                    </v-tooltip>
                   </div>
                 </template>
                 <template v-else>{{value}}</template>
