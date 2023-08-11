@@ -35,6 +35,7 @@
           <v-list-item prepend-icon="mdi-account" title="帳戶管理" value="admin-user"></v-list-item>
           <v-list-item prepend-icon="mdi-timeline-check" title="打卡管理" value="admin-punch"></v-list-item>
           <v-list-item prepend-icon="mdi-briefcase" title="專案管理" value="admin-project"></v-list-item>
+          <v-list-item prepend-icon="mdi-file-chart" title="報表匯出" value="admin-report"></v-list-item>
         </v-list-group>
       </v-list>
     </v-navigation-drawer>
@@ -66,6 +67,7 @@
     <AdminUser v-if="selectedComponent[0]=='admin-user'" />
     <AdminPunch v-if="selectedComponent[0]=='admin-punch'" />
     <AdminProject v-if="selectedComponent[0]=='admin-project'" />
+    <AdminReport v-if="selectedComponent[0]=='admin-report'" />
 
   </v-container>
 </template>
@@ -84,6 +86,7 @@ import Admin from '@/components/Home/Admin.vue';
 import AdminUser from '@/components/Home/Admin/User.vue';
 import AdminPunch from '@/components/Home/Admin/Punch.vue';
 import AdminProject from '@/components/Home/Admin/Project.vue';
+import AdminReport from '@/components/Home/Admin/Report.vue';
 
 const router = useRouter();
 

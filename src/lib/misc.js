@@ -15,6 +15,20 @@ const formattedDate = (date) => {
   return `${year}/${month}/${day} ${hour}:${min}:${sec}`;
 };
 
+const downloadReport = (csv, title) => {
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  const date = new Date();
+  link.setAttribute("href", url);
+  link.setAttribute("download", `${title}-${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 export {
   formattedDate,
+  downloadReport,
 };
